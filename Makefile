@@ -1,5 +1,5 @@
 
-clean: clean-infra clean-cli
+clean: clean-infra clean-cli clean-lib
 	rm -rf scripts/packaging/node_modules
 
 clean-infra:
@@ -7,6 +7,10 @@ clean-infra:
 
 clean-cli:
 	cd cli && npm run clean
+
+clean-lib:
+	rm -rf lib/rust/target
+	rm -rf lib/rust/detection_lib/.venv
 
 build-infra:
 	cd infra && npm ci && npm run build
@@ -40,3 +44,6 @@ package: build-all
 
 local-install: build-cli
 	cd cli && npm run full-install
+
+build-docker: clean
+	docker buildx build .
