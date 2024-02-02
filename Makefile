@@ -46,4 +46,9 @@ local-install: build-cli
 	cd cli && npm run full-install
 
 build-docker: clean
-	docker buildx build .
+	docker buildx build \
+		--tag=matano:latest \
+		--builder=container \
+		--attest=type=sbom \
+		--output type=local,dest=out \
+		.

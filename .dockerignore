@@ -1,9 +1,7 @@
 *
-!assets/
 !cli/
 !data/
 !infra/
 !lib/
 !Makefile
-!rustup-toolchain
 !scripts/

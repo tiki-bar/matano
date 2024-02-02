@@ -1,7 +1,11 @@
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG RUSTUP_TOOLCHAIN=1.63
 
-FROM ubuntu:22.04 AS build
+FROM ubuntu:22.04 AS build-base
 
+ARG BUILDKIT_SBOM_SCAN_CONTEXT
+ARG BUILDKIT_SBOM_SCAN_STAGE
 ARG RUSTUP_TOOLCHAIN
 ENV RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN}
 
@@ -14,7 +18,7 @@ RUN apt-get -q update && \
         gnupg \
         python3 \
         python3-pip \
-        python3-venv \ 
+        python3-venv \
     && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
@@ -38,14 +42,25 @@ RUN apt-get -q update && \
 # Add Cargo to path
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Add the rest of the Matano source code
 RUN mkdir /opt/matano
 WORKDIR /opt/matano
-RUN pip install cargo-lambda
+RUN pip install --no-cache-dir cargo-lambda
 
+# Copy and build the Matano codebase
+FROM build-base AS build
+ARG BUILDKIT_SBOM_SCAN_CONTEXT
+ARG BUILDKIT_SBOM_SCAN_STAGE
 COPY . .
 RUN make build-cli
 RUN make build-infra
 RUN make build-python
 RUN make build-rust
 RUN make build-jvm
+
+# Final image with the Matano binary
+FROM build-base AS matano
+ARG BUILDKIT_SBOM_SCAN_CONTEXT
+ARG BUILDKIT_SBOM_SCAN_STAGE
+COPY --from=build /opt/matano /opt/matano
+RUN make local-install
+CMD ["matano"]
