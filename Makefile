@@ -49,6 +49,5 @@ build-docker: clean
 	docker buildx build \
 		--tag=matano:latest \
 		--builder=container \
-		--attest=type=sbom \
-		--output type=local,dest=out \
+		--load \
 		.

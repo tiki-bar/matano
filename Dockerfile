@@ -56,11 +56,6 @@ RUN make build-infra
 RUN make build-python
 RUN make build-rust
 RUN make build-jvm
+RUN make package
 
-# Final image with the Matano binary
-FROM build-base AS matano
-ARG BUILDKIT_SBOM_SCAN_CONTEXT
-ARG BUILDKIT_SBOM_SCAN_STAGE
-COPY --from=build /opt/matano /opt/matano
-RUN make local-install
-CMD ["matano"]
+# Final image with the Matano CLI
